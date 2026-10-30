@@ -5,7 +5,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: APK yaratish
+      - name: Java 17 ornatish
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: APK yaratish va yigish
         run: |
           mkdir -p app/src/main/java/com/example/uzbekkeyboard
           mkdir -p app/src/main/res/layout
@@ -23,8 +29,8 @@ jobs:
                   mavenCentral()
               }
               dependencies {
-                  classpath 'com.android.tools.build:gradle:8.1.0'
-                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+                  classpath 'com.android.tools.build:gradle:8.2.0'
+                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20'
               }
           }
           allprojects {
@@ -56,9 +62,6 @@ jobs:
               kotlinOptions {
                   jvmTarget = '17'
               }
-          }
-          dependencies {
-              implementation 'androidx.core:core-ktx:1.12.0'
           }
           EOF
 
@@ -288,8 +291,9 @@ jobs:
           }
           EOF
 
-          gradle wrapper --gradle-version 8.0
-          ./gradlew assembleDebug --no-daemon
+          curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          ./gradle-8.5/bin/gradle assembleDebug --no-daemon
 
       - name: Tayyor APK yuklash
         uses: actions/upload-artifact@v4
