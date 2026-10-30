@@ -5,23 +5,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodni olish
-        uses: actions/checkout@v4
-
       - name: Java 17 ornatish
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Fayllarni yozish
+      - name: Fayllarni yaratish va APK yigish
         run: |
           mkdir -p app/src/main/java/com/example/uzbekkeyboard
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/xml
 
-          echo 'android.useAndroidX=true' > gradle.properties
+          echo "android.useAndroidX=true" > gradle.properties
 
           echo 'rootProject.name="UzbekKeyboard"' > settings.gradle
           echo 'include(":app")' >> settings.gradle
@@ -284,8 +281,8 @@ jobs:
           }
           EOF
 
-      - name: APK yigish
-        run: ./gradlew assembleDebug
+          gradle wrapper --gradle-version 8.2
+          ./gradlew assembleDebug --no-daemon
 
       - name: Tayyor APK yuklash
         uses: actions/upload-artifact@v4
