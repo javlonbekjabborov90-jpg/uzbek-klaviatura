@@ -5,7 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Loyihani sozlash va APK yaratish
+      - name: APK yaratish
         run: |
           mkdir -p app/src/main/java/com/example/uzbekkeyboard
           mkdir -p app/src/main/res/layout
@@ -252,7 +252,6 @@ jobs:
                   return rootView
               }
 
-              private var isCaps = true
               private fun renderKeys() {
                   rowsContainer.removeAllViews()
                   val currentLayout = if (isCyrillic) cyrillicRows else latinRows
