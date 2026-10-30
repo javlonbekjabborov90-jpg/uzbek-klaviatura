@@ -5,309 +5,303 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Java 17 ornatish
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Android SDK ornatish
-        uses: android-actions/setup-android@v3
-
-      - name: Gradle ornatish
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
-
-      - name: Loyihani yaratish va APK yigish
+      - name: APK yaratish
         run: |
-          yes | sdkmanager --licenses || true
-          python3 - << 'PYEOF'
-          import os
+          python3 -c '
+          import os, textwrap
 
-          files = {
-              "gradle.properties": """android.useAndroidX=true
-          org.gradle.jvmargs=-Xmx2048m
-          """,
-              "settings.gradle": """pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "UzbekKeyboard"
-          include ':app'
-          """,
-              "build.gradle": """plugins {
-              id 'com.android.application' version '8.2.0' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
-          }
-          """,
-              "app/build.gradle": """plugins {
-              id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
-          }
-          android {
-              namespace 'com.example.uzbekkeyboard'
-              compileSdk 34
-              defaultConfig {
-                  applicationId "com.example.uzbekkeyboard"
-                  minSdk 21
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0"
-              }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
-          }
-          """,
-              "app/src/main/AndroidManifest.xml": """<?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application android:label="Yangi Ozbek Alifbosi">
-                  <service
-                      android:name=".UzbekKeyboardService"
-                      android:label="Yangi Ozbek Klaviaturasi"
-                      android:permission="android.permission.BIND_INPUT_METHOD"
-                      android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.view.InputMethod" />
-                      </intent-filter>
-                      <meta-data
-                          android:name="android.view.im"
-                          android:resource="@xml/method" />
-                  </service>
-              </application>
-          </manifest>
-          """,
-              "app/src/main/res/xml/method.xml": """<?xml version="1.0" encoding="utf-8"?>
-          <input-method xmlns:android="http://schemas.android.com/apk/res/android">
-              <subtype
-                  android:label="Ozbek (Yangi alifbo)"
-                  android:imeSubtypeLocale="uz_UZ"
-                  android:imeSubtypeMode="keyboard" />
-          </input-method>
-          """,
-              "app/src/main/res/drawable/key_bg.xml": """<?xml version="1.0" encoding="utf-8"?>
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_pressed="true">
-                  <shape android:shape="rectangle">
-                      <solid android:color="#D4AF37" />
-                      <corners android:radius="6dp" />
-                  </shape>
-              </item>
-              <item>
-                  <shape android:shape="rectangle">
-                      <gradient
-                          android:startColor="#1E1E1E"
-                          android:endColor="#0A0A0A"
-                          android:angle="270" />
-                      <stroke android:width="1.5dp" android:color="#C5A059" />
-                      <corners android:radius="6dp" />
-                  </shape>
-              </item>
-          </selector>
-          """,
-              "app/src/main/res/layout/keyboard_view.xml": """<?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:background="#080808"
-              android:orientation="vertical"
-              android:padding="4dp">
+          def w(p, c):
+              os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+              with open(p, "w", encoding="utf-8") as f:
+                  f.write(textwrap.dedent(c).strip() + "\n")
 
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="42dp"
-                  android:gravity="center_vertical"
-                  android:orientation="horizontal"
-                  android:paddingHorizontal="8dp">
+          w("gradle.properties", """
+              android.useAndroidX=true
+              org.gradle.jvmargs=-Xmx2048m
+          """)
 
-                  <Button
-                      android:id="@+id/btnLat"
-                      android:layout_width="60dp"
-                      android:layout_height="36dp"
-                      android:background="@drawable/key_bg"
-                      android:text="O‘z"
-                      android:textColor="#D4AF37"
-                      android:textStyle="bold" />
+          w("settings.gradle", """
+              pluginManagement {
+                  repositories {
+                      google()
+                      mavenCentral()
+                      gradlePluginPortal()
+                  }
+              }
+              dependencyResolutionManagement {
+                  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+                  repositories {
+                      google()
+                      mavenCentral()
+                  }
+              }
+              rootProject.name = "UzbekKeyboard"
+              include ":app"
+          """)
 
-                  <Button
-                      android:id="@+id/btnCyr"
-                      android:layout_width="60dp"
-                      android:layout_height="36dp"
-                      android:layout_marginStart="8dp"
-                      android:background="@drawable/key_bg"
-                      android:text="Ўз"
-                      android:textColor="#D4AF37"
-                      android:textStyle="bold" />
-              </LinearLayout>
+          w("build.gradle", """
+              plugins {
+                  id "com.android.application" version "8.1.4" apply false
+                  id "org.jetbrains.kotlin.android" version "1.9.10" apply false
+              }
+          """)
 
-              <LinearLayout
-                  android:id="@+id/rowsContainer"
+          w("app/build.gradle", """
+              plugins {
+                  id "com.android.application"
+                  id "org.jetbrains.kotlin.android"
+              }
+              android {
+                  namespace "com.example.uzbekkeyboard"
+                  compileSdk 34
+                  defaultConfig {
+                      applicationId "com.example.uzbekkeyboard"
+                      minSdk 21
+                      targetSdk 34
+                      versionCode 1
+                      versionName "1.0"
+                  }
+                  compileOptions {
+                      sourceCompatibility JavaVersion.VERSION_17
+                      targetCompatibility JavaVersion.VERSION_17
+                  }
+                  kotlinOptions {
+                      jvmTarget = "17"
+                  }
+              }
+          """)
+
+          w("app/src/main/AndroidManifest.xml", """
+              <?xml version="1.0" encoding="utf-8"?>
+              <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                  <application android:label="Yangi Ozbek Alifbosi">
+                      <service
+                          android:name=".UzbekKeyboardService"
+                          android:label="Yangi Ozbek Klaviaturasi"
+                          android:permission="android.permission.BIND_INPUT_METHOD"
+                          android:exported="true">
+                          <intent-filter>
+                              <action android:name="android.view.InputMethod" />
+                          </intent-filter>
+                          <meta-data
+                              android:name="android.view.im"
+                              android:resource="@xml/method" />
+                      </service>
+                  </application>
+              </manifest>
+          """)
+
+          w("app/src/main/res/xml/method.xml", """
+              <?xml version="1.0" encoding="utf-8"?>
+              <input-method xmlns:android="http://schemas.android.com/apk/res/android">
+                  <subtype
+                      android:label="Ozbek (Yangi alifbo)"
+                      android:imeSubtypeLocale="uz_UZ"
+                      android:imeSubtypeMode="keyboard" />
+              </input-method>
+          """)
+
+          w("app/src/main/res/drawable/key_bg.xml", """
+              <?xml version="1.0" encoding="utf-8"?>
+              <selector xmlns:android="http://schemas.android.com/apk/res/android">
+                  <item android:state_pressed="true">
+                      <shape android:shape="rectangle">
+                          <solid android:color="#D4AF37" />
+                          <corners android:radius="6dp" />
+                      </shape>
+                  </item>
+                  <item>
+                      <shape android:shape="rectangle">
+                          <gradient
+                              android:startColor="#1E1E1E"
+                              android:endColor="#0A0A0A"
+                              android:angle="270" />
+                          <stroke android:width="1.5dp" android:color="#C5A059" />
+                          <corners android:radius="6dp" />
+                      </shape>
+                  </item>
+              </selector>
+          """)
+
+          w("app/src/main/res/layout/keyboard_view.xml", """
+              <?xml version="1.0" encoding="utf-8"?>
+              <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:orientation="vertical" />
-
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="50dp"
-                  android:layout_marginTop="4dp"
-                  android:orientation="horizontal">
-
-                  <Button
-                      android:id="@+id/btnShift"
-                      android:layout_width="0dp"
-                      android:layout_height="match_parent"
-                      android:layout_weight="1.5"
-                      android:layout_margin="2dp"
-                      android:background="@drawable/key_bg"
-                      android:text="⬆"
-                      android:textColor="#D4AF37" />
-
-                  <Button
-                      android:id="@+id/btnSpace"
-                      android:layout_width="0dp"
-                      android:layout_height="match_parent"
-                      android:layout_weight="5"
-                      android:layout_margin="2dp"
-                      android:background="@drawable/key_bg"
-                      android:text="O‘zbekcha"
-                      android:textColor="#FFFFFF" />
-
-                  <Button
-                      android:id="@+id/btnBackspace"
-                      android:layout_width="0dp"
-                      android:layout_height="match_parent"
-                      android:layout_weight="1.5"
-                      android:layout_margin="2dp"
-                      android:background="@drawable/key_bg"
-                      android:text="⌫"
-                      android:textColor="#D4AF37" />
-
-                  <Button
-                      android:id="@+id/btnEnter"
-                      android:layout_width="0dp"
-                      android:layout_height="match_parent"
-                      android:layout_weight="1.5"
-                      android:layout_margin="2dp"
-                      android:background="@drawable/key_bg"
-                      android:text="↵"
-                      android:textColor="#D4AF37" />
+                  android:background="#080808"
+                  android:orientation="vertical"
+                  android:padding="4dp">
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="42dp"
+                      android:gravity="center_vertical"
+                      android:orientation="horizontal"
+                      android:paddingHorizontal="8dp">
+                      <Button
+                          android:id="@+id/btnLat"
+                          android:layout_width="60dp"
+                          android:layout_height="36dp"
+                          android:background="@drawable/key_bg"
+                          android:text="O‘z"
+                          android:textColor="#D4AF37"
+                          android:textStyle="bold" />
+                      <Button
+                          android:id="@+id/btnCyr"
+                          android:layout_width="60dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="8dp"
+                          android:background="@drawable/key_bg"
+                          android:text="Ўз"
+                          android:textColor="#D4AF37"
+                          android:textStyle="bold" />
+                  </LinearLayout>
+                  <LinearLayout
+                      android:id="@+id/rowsContainer"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical" />
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="50dp"
+                      android:layout_marginTop="4dp"
+                      android:orientation="horizontal">
+                      <Button
+                          android:id="@+id/btnShift"
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="1.5"
+                          android:layout_margin="2dp"
+                          android:background="@drawable/key_bg"
+                          android:text="⬆"
+                          android:textColor="#D4AF37" />
+                      <Button
+                          android:id="@+id/btnSpace"
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="5"
+                          android:layout_margin="2dp"
+                          android:background="@drawable/key_bg"
+                          android:text="O‘zbekcha"
+                          android:textColor="#FFFFFF" />
+                      <Button
+                          android:id="@+id/btnBackspace"
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="1.5"
+                          android:layout_margin="2dp"
+                          android:background="@drawable/key_bg"
+                          android:text="⌫"
+                          android:textColor="#D4AF37" />
+                      <Button
+                          android:id="@+id/btnEnter"
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="1.5"
+                          android:layout_margin="2dp"
+                          android:background="@drawable/key_bg"
+                          android:text="↵"
+                          android:textColor="#D4AF37" />
+                  </LinearLayout>
               </LinearLayout>
-          </LinearLayout>
-          """,
-              "app/src/main/java/com/example/uzbekkeyboard/UzbekKeyboardService.kt": """package com.example.uzbekkeyboard
+          """)
 
-          import android.inputmethodservice.InputMethodService
-          import android.view.Gravity
-          import android.view.View
-          import android.widget.Button
-          import android.widget.LinearLayout
-          import android.graphics.Color
+          w("app/src/main/java/com/example/uzbekkeyboard/UzbekKeyboardService.kt", """
+              package com.example.uzbekkeyboard
 
-          class UzbekKeyboardService : InputMethodService() {
-              private var isCaps = true
-              private var isCyrillic = false
-              private lateinit var rowsContainer: LinearLayout
+              import android.inputmethodservice.InputMethodService
+              import android.view.Gravity
+              import android.view.View
+              import android.widget.Button
+              import android.widget.LinearLayout
+              import android.graphics.Color
 
-              private val latinRows = listOf(
-                  listOf("Q", "W", "E", "R", "T", "Y", "U", "O", "P", "Ğ"),
-                  listOf("A", "S", "D", "F", "G", "H", "J", "K", "L", "Ş", "I"),
-                  listOf("Z", "X", "C", "V", "B", "N", "M", "Ö", "Ç")
-              )
+              class UzbekKeyboardService : InputMethodService() {
+                  private var isCaps = true
+                  private var isCyrillic = false
+                  private lateinit var rowsContainer: LinearLayout
 
-              private val cyrillicRows = listOf(
-                  listOf("Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Ў", "З", "Х", "Ғ"),
-                  listOf("Ф", "Қ", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э"),
-                  listOf("Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "Ҳ")
-              )
+                  private val latinRows = listOf(
+                      listOf("Q", "W", "E", "R", "T", "Y", "U", "O", "P", "Ğ"),
+                      listOf("A", "S", "D", "F", "G", "H", "J", "K", "L", "Ş", "I"),
+                      listOf("Z", "X", "C", "V", "B", "N", "M", "Ö", "Ç")
+                  )
 
-              override fun onCreateInputView(): View {
-                  val rootView = layoutInflater.inflate(R.layout.keyboard_view, null)
-                  rowsContainer = rootView.findViewById(R.id.rowsContainer)
-                  renderKeys()
+                  private val cyrillicRows = listOf(
+                      listOf("Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Ў", "З", "Х", "Ғ"),
+                      listOf("Ф", "Қ", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э"),
+                      listOf("Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "Ҳ")
+                  )
 
-                  rootView.findViewById<Button>(R.id.btnLat).setOnClickListener {
-                      isCyrillic = false
+                  override fun onCreateInputView(): View {
+                      val rootView = layoutInflater.inflate(R.layout.keyboard_view, null)
+                      rowsContainer = rootView.findViewById(R.id.rowsContainer)
                       renderKeys()
-                  }
-                  rootView.findViewById<Button>(R.id.btnCyr).setOnClickListener {
-                      isCyrillic = true
-                      renderKeys()
-                  }
-                  rootView.findViewById<Button>(R.id.btnShift).setOnClickListener {
-                      isCaps = !isCaps
-                      renderKeys()
-                  }
-                  rootView.findViewById<Button>(R.id.btnSpace).setOnClickListener {
-                      currentInputConnection?.commitText(" ", 1)
-                  }
-                  rootView.findViewById<Button>(R.id.btnBackspace).setOnClickListener {
-                      currentInputConnection?.deleteSurroundingText(1, 0)
-                  }
-                  rootView.findViewById<Button>(R.id.btnEnter).setOnClickListener {
-                      currentInputConnection?.sendKeyChar('\\n')
-                  }
-                  return rootView
-              }
 
-              private fun renderKeys() {
-                  rowsContainer.removeAllViews()
-                  val currentLayout = if (isCyrillic) cyrillicRows else latinRows
-
-                  for (row in currentLayout) {
-                      val rowLayout = LinearLayout(this).apply {
-                          layoutParams = LinearLayout.LayoutParams(
-                              LinearLayout.LayoutParams.MATCH_PARENT, 130
-                          ).apply { setMargins(0, 4, 0, 4) }
-                          orientation = LinearLayout.HORIZONTAL
-                          gravity = Gravity.CENTER
+                      rootView.findViewById<Button>(R.id.btnLat).setOnClickListener {
+                          isCyrillic = false
+                          renderKeys()
                       }
+                      rootView.findViewById<Button>(R.id.btnCyr).setOnClickListener {
+                          isCyrillic = true
+                          renderKeys()
+                      }
+                      rootView.findViewById<Button>(R.id.btnShift).setOnClickListener {
+                          isCaps = !isCaps
+                          renderKeys()
+                      }
+                      rootView.findViewById<Button>(R.id.btnSpace).setOnClickListener {
+                          currentInputConnection?.commitText(" ", 1)
+                      }
+                      rootView.findViewById<Button>(R.id.btnBackspace).setOnClickListener {
+                          currentInputConnection?.deleteSurroundingText(1, 0)
+                      }
+                      rootView.findViewById<Button>(R.id.btnEnter).setOnClickListener {
+                          currentInputConnection?.sendKeyChar(10.toChar())
+                      }
+                      return rootView
+                  }
 
-                      for (char in row) {
-                          val displayChar = if (isCaps) char.uppercase() else char.lowercase()
-                          val keyButton = Button(this).apply {
-                              layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f).apply {
-                                  setMargins(2, 0, 2, 0)
-                              }
-                              text = displayChar
-                              setTextColor(Color.WHITE)
-                              textSize = 16f
-                              setBackgroundResource(R.drawable.key_bg)
-                              setPadding(0, 0, 0, 0)
-                              setOnClickListener {
-                                  currentInputConnection?.commitText(displayChar, 1)
-                              }
+                  private fun renderKeys() {
+                      rowsContainer.removeAllViews()
+                      val currentLayout = if (isCyrillic) cyrillicRows else latinRows
+
+                      for (row in currentLayout) {
+                          val rowLayout = LinearLayout(this).apply {
+                              layoutParams = LinearLayout.LayoutParams(
+                                  LinearLayout.LayoutParams.MATCH_PARENT, 130
+                              ).apply { setMargins(0, 4, 0, 4) }
+                              orientation = LinearLayout.HORIZONTAL
+                              gravity = Gravity.CENTER
                           }
-                          rowLayout.addView(keyButton)
+
+                          for (char in row) {
+                              val displayChar = if (isCaps) char.uppercase() else char.lowercase()
+                              val keyButton = Button(this).apply {
+                                  layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f).apply {
+                                      setMargins(2, 0, 2, 0)
+                                  }
+                                  text = displayChar
+                                  setTextColor(Color.WHITE)
+                                  textSize = 16f
+                                  setBackgroundResource(R.drawable.key_bg)
+                                  setPadding(0, 0, 0, 0)
+                                  setOnClickListener {
+                                      currentInputConnection?.commitText(displayChar, 1)
+                                  }
+                              }
+                              rowLayout.addView(keyButton)
+                          }
+                          rowsContainer.addView(rowLayout)
                       }
-                      rowsContainer.addView(rowLayout)
                   }
               }
-          }
-          """
-          }
-
-          for path, content in files.items():
-              os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-              cleaned = "\n".join(line[10:] if line.startswith("          ") else line for line in content.splitlines())
-              with open(path, "w", encoding="utf-8") as f:
-                  f.write(cleaned.strip() + "\n")
-          PYEOF
-          gradle assembleDebug --stacktrace
+          """)
+          '
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+          curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          ./gradle-8.4/bin/gradle assembleDebug --no-daemon
 
       - name: Tayyor APK yuklash
         uses: actions/upload-artifact@v4
